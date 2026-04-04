@@ -1,8 +1,12 @@
-let timerInterval, startTime, elapsedTime = 0;
-const limitNormal = 5 * 60 * 1000;
-const maxOvertime = 20 * 60 * 1000;
-let endTimeRecord, dateRecord, currentStatusData = {};
+let tests = {
+    1: { elapsedTime: 0, startTime: null, interval: null, status: 'idle', data: {}, date: '', endTime: '' },
+    2: { elapsedTime: 0, startTime: null, interval: null, status: 'idle', data: {}, date: '', endTime: '' },
+    3: { elapsedTime: 0, startTime: null, interval: null, status: 'idle', data: {}, date: '', endTime: '' },
+    4: { elapsedTime: 0, startTime: null, interval: null, status: 'idle', data: {}, date: '', endTime: '' }
+};
 
+let currentActive = 1;
+const limitNormal = 5 * 60 * 1000;
 const modal = new bootstrap.Modal(document.getElementById('resultModal'));
 
 function formatTime(ms) {
@@ -12,89 +16,103 @@ function formatTime(ms) {
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}:${cs.toString().padStart(2, "0")}`;
 }
 
-// Formatação HH:MM:00 para o WhatsApp (Soma tempo real)
-function formatRealTotalTime(ms) {
-    let m = Math.floor(ms / 60000);
-    let s = Math.floor((ms % 60000) / 1000);
-    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}:00`;
+function selectTest(num) {
+    document.querySelectorAll('.btn-test-slot').forEach(b => b.classList.remove('active'));
+    document.getElementById(`slot-${num}`).classList.add('active');
+    currentActive = num;
+    document.getElementById('active-test-label').innerText = `TESTE ${num} EM FOCO`;
+    refreshUI();
 }
 
-function updateUI() {
+function refreshUI() {
+    const t = tests[currentActive];
+    updateChronometerDisplay(t.elapsedTime);
+    document.getElementById('startBtn').disabled = (t.status === 'running' || t.status === 'completed');
+    document.getElementById('stopBtn').disabled = (t.status !== 'running');
+}
+
+function updateChronometerDisplay(ms) {
     const timerDisplay = document.getElementById('timer');
     const progressCircle = document.getElementById('progress');
-    timerDisplay.innerHTML = formatTime(elapsedTime);
-
-    if (elapsedTime <= limitNormal) {
-        const offset = 251.32 - (elapsedTime * 251.32 / limitNormal);
+    
+    if (ms <= limitNormal) {
+        timerDisplay.innerHTML = formatTime(ms);
+        const offset = 251.32 - (ms * 251.32 / limitNormal);
         progressCircle.style.strokeDashoffset = offset;
         progressCircle.style.stroke = "#0061A4";
         timerDisplay.style.color = "#0061A4";
         document.getElementById('overtime-container').style.visibility = "hidden";
-        document.getElementById('status-label').innerText = "Tempo Decorrido";
     } else {
-        let extra = elapsedTime - limitNormal;
         timerDisplay.innerHTML = "05:00:00";
-        document.getElementById('overtime-timer').innerHTML = formatTime(extra);
+        document.getElementById('overtime-timer').innerHTML = formatTime(ms - limitNormal);
         document.getElementById('overtime-container').style.visibility = "visible";
-        document.getElementById('status-label').innerText = "Tempo Extra";
         progressCircle.style.stroke = "#FBC02D"; 
         timerDisplay.style.color = "#FBC02D";
-        if (extra >= maxOvertime) { clearInterval(timerInterval); stopTimer(); }
     }
 }
 
-function startTimer() {
-    startTime = Date.now() - elapsedTime;
-    timerInterval = setInterval(() => {
-        elapsedTime = Date.now() - startTime;
-        updateUI();
+function startActiveTimer() {
+    const t = tests[currentActive];
+    t.status = 'running';
+    t.startTime = Date.now() - t.elapsedTime;
+    document.getElementById(`slot-${currentActive}`).classList.add('running');
+    
+    t.interval = setInterval(() => {
+        t.elapsedTime = Date.now() - t.startTime;
+        if (currentActive === currentActive) updateChronometerDisplay(t.elapsedTime);
     }, 10);
-    document.getElementById('startBtn').disabled = true;
-    document.getElementById('stopBtn').disabled = false;
+    refreshUI();
 }
 
-function stopTimer() {
-    clearInterval(timerInterval);
+function stopActiveTimer() {
+    const t = tests[currentActive];
+    clearInterval(t.interval);
+    t.status = 'completed';
     const agora = new Date();
-    dateRecord = agora.toLocaleDateString('pt-BR');
-    endTimeRecord = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    t.date = agora.toLocaleDateString('pt-BR');
+    t.endTime = agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+
+    document.getElementById(`slot-${currentActive}`).classList.remove('running');
+    document.getElementById(`slot-${currentActive}`).classList.add('completed');
+    
+    document.getElementById('modalTitle').innerText = `Finalizar Teste ${currentActive}`;
     modal.show();
+    refreshUI();
 }
 
 function setStatus(status, color) {
     const prod = document.getElementById('modalProducer').value;
     const plac = document.getElementById('modalPlate').value;
     if(!prod || !plac) return alert("Preencha Produtor(a) e Placa!");
-    currentStatusData = { status, prod, plac };
+    tests[currentActive].data = { status, prod, plac };
     document.getElementById('exportOptions').classList.remove('d-none');
-    document.querySelectorAll('.btn-status').forEach(b => b.style.border = "1px solid #ddd");
-    event.target.style.border = `2px solid ${color}`;
 }
 
 function exportWhatsApp(tipo) {
+    const t = tests[currentActive];
     const auditor = document.getElementById('auditorName').value;
     const pdr = document.getElementById('pdrValue').value;
-    const { status, prod, plac } = currentStatusData;
+    const d = t.data;
     
-    let tempoFinal = formatRealTotalTime(elapsedTime);
+    let tempoTotal = `${Math.floor(t.elapsedTime / 60000).toString().padStart(2, "0")}:${Math.floor((t.elapsedTime % 60000) / 1000).toString().padStart(2, "0")}:00`;
 
     let msg = tipo === 'completo' ? 
-        `*REGISTRO DE AUDITORIA*%0A--------------------------%0A*Data:* ${dateRecord}%0A*Hora:* ${endTimeRecord}%0A%0A*Auditor:* ${auditor}%0A*PDR:* ${pdr}%0A*Produtor(a):* ${prod}%0A*Placa:* ${plac.toUpperCase()}%0A*Tempo Testagem:* ${tempoFinal}%0A*Resultado:* ${status}` :
-        `*Produtor(a):* ${prod}%0A*Placa:* ${plac.toUpperCase()}%0A*Resultado:* ${status}`;
+        `*AUDITORIA - TESTE ${currentActive}*%0A--------------------------%0A*Data:* ${t.date}%0A*Hora:* ${t.endTime}%0A%0A*Auditor:* ${auditor}%0A*PDR:* ${pdr}%0A*Produtor(a):* ${d.prod}%0A*Placa:* ${d.plac.toUpperCase()}%0A*Tempo Testagem:* ${tempoTotal}%0A*Resultado:* ${d.status}` :
+        `*Teste ${currentActive} - ${d.prod}* (${d.plac.toUpperCase()}): ${d.status}`;
 
     window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
 }
 
-function softReset() {
-    clearInterval(timerInterval);
-    elapsedTime = 0;
-    updateUI();
+function resetCurrentTest() {
+    const t = tests[currentActive];
+    clearInterval(t.interval);
+    tests[currentActive] = { elapsedTime: 0, startTime: null, interval: null, status: 'idle', data: {}, date: '', endTime: '' };
+    document.getElementById(`slot-${currentActive}`).classList.remove('completed', 'running');
     document.getElementById('modalProducer').value = "";
     document.getElementById('modalPlate').value = "";
     document.getElementById('exportOptions').classList.add('d-none');
-    document.getElementById('startBtn').disabled = false;
-    document.getElementById('stopBtn').disabled = true;
     modal.hide();
+    refreshUI();
 }
 
 function toggleScreen(scr) {
@@ -109,11 +127,4 @@ function copyPix(e) {
     navigator.clipboard.writeText(key.value);
     e.target.innerText = "Copiado! ✅";
     setTimeout(() => e.target.innerText = "Copiar", 2000);
-}
-
-document.getElementById('startBtn').addEventListener('click', startTimer);
-document.getElementById('stopBtn').addEventListener('click', stopTimer);
-
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); });
 }

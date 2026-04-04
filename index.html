@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auditoria Pro</title>
+    <title>Auditoria Pro - Multi-Teste</title>
     <link rel="icon" type="image/png" href="icon-192.png">
-    <link rel="apple-touch-icon" href="icon-192.png">
     <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -14,94 +13,76 @@
 <body class="bg-light">
 
     <div class="container pt-3">
-        <div class="d-flex justify-content-end">
-            <button id="btnSobre" class="btn btn-light rounded-pill shadow-sm" onclick="toggleScreen('bio-screen')">
-                ℹ️ Sobre
-            </button>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold text-primary mb-0">Auditoria Pro <span class="badge bg-primary rounded-pill" style="font-size: 0.6rem;">MULTI</span></h5>
+            <button id="btnSobre" class="btn btn-light rounded-pill shadow-sm" onclick="toggleScreen('bio-screen')">ℹ️ Sobre</button>
         </div>
     </div>
 
-    <div id="main-screen" class="container d-flex align-items-center justify-content-center" style="min-height: 80vh;">
-        <div class="col-12 col-md-6 col-lg-5">
-            <div class="card-material p-4 shadow-lg bg-white">
-                <h6 class="fw-bold text-secondary text-uppercase text-center mb-4">Auditoria de Carga</h6>
-                
-                <div class="mb-4">
-                    <div class="form-floating mb-2">
-                        <input type="text" class="form-control" id="auditorName" placeholder="Auditor">
-                        <label>Auditor(a)</label>
-                    </div>
-                    <div class="form-floating mb-2">
-                        <input type="text" class="form-control" id="pdrValue" placeholder="PDR">
-                        <label>PDR</label>
-                    </div>
-                </div>
-
-                <div class="text-center">
-                    <div class="gauge-container mb-3">
-                        <svg viewBox="0 0 200 120" class="gauge">
-                            <path class="gauge-bg" d="M20,100 A80,80 0 0,1 180,100" />
-                            <path id="progress" class="gauge-progress" d="M20,100 A80,80 0 0,1 180,100" />
-                        </svg>
-                    </div>
-                    <small id="status-label" class="text-muted d-block fw-bold text-uppercase">Tempo Decorrido</small>
-                    <span id="timer">00:00:00</span>
-                    <div id="overtime-container" class="mt-2" style="visibility: hidden;">
-                        <span class="badge-extra-warning">TEMPO EXTRA: <span id="overtime-timer">00:00:00</span></span>
-                    </div>
-                </div>
-
-                <div class="d-flex justify-content-between gap-2 mt-4">
-                    <button id="startBtn" class="btn btn-primary-md flex-grow-1 shadow-sm">Iniciar</button>
-                    <button id="stopBtn" class="btn btn-danger-md flex-grow-1 shadow-sm" disabled>Parar</button>
-                    <button class="btn btn-light-md shadow-sm" onclick="softReset()">Limpar</button>
-                </div>
+    <div id="main-screen" class="container">
+        <div class="card-material p-3 shadow-sm bg-white mb-3 rounded-4">
+            <div class="row g-2">
+                <div class="col-6"><div class="form-floating"><input type="text" class="form-control" id="auditorName" placeholder="Auditor"><label>Auditor</label></div></div>
+                <div class="col-6"><div class="form-floating"><input type="text" class="form-control" id="pdrValue" placeholder="PDR"><label>PDR</label></div></div>
             </div>
+        </div>
+
+        <div class="card-material p-4 shadow-lg bg-white mb-3 rounded-5 text-center border-top border-5 border-primary">
+            <h6 id="active-test-label" class="fw-bold text-primary text-uppercase mb-3">TESTE 1 EM FOCO</h6>
+            <div class="gauge-container mb-2">
+                <svg viewBox="0 0 200 120" class="gauge">
+                    <path class="gauge-bg" d="M20,100 A80,80 0 0,1 180,100" />
+                    <path id="progress" class="gauge-progress" d="M20,100 A80,80 0 0,1 180,100" />
+                </svg>
+            </div>
+            <span id="timer">00:00:00</span>
+            <div id="overtime-container" class="mt-1" style="visibility: hidden;">
+                <span class="badge-extra-warning">EXTRA: <span id="overtime-timer">00:00:00</span></span>
+            </div>
+            <div class="d-flex justify-content-center gap-2 mt-4">
+                <button id="startBtn" class="btn btn-primary-md px-5 shadow-sm" onclick="startActiveTimer()">Iniciar</button>
+                <button id="stopBtn" class="btn btn-danger-md px-5 shadow-sm" onclick="stopActiveTimer()" disabled>Parar</button>
+            </div>
+        </div>
+
+        <div class="row g-2 mb-4">
+            <div class="col-3"><button class="btn btn-test-slot active" id="slot-1" onclick="selectTest(1)">T1<div class="dot"></div></button></div>
+            <div class="col-3"><button class="btn btn-test-slot" id="slot-2" onclick="selectTest(2)">T2<div class="dot"></div></button></div>
+            <div class="col-3"><button class="btn btn-test-slot" id="slot-3" onclick="selectTest(3)">T3<div class="dot"></div></button></div>
+            <div class="col-3"><button class="btn btn-test-slot" id="slot-4" onclick="selectTest(4)">T4<div class="dot"></div></button></div>
         </div>
     </div>
 
     <div id="bio-screen" class="container d-none py-4">
-        <div class="row justify-content-center">
-            <div class="col-12 col-md-6 col-lg-5">
-                <div class="card-material p-4 shadow-lg bg-white text-center">
-                    
-                    <div class="mb-4 position-relative d-inline-block">
-                        <img src="minha-foto.jpg" alt="Foto Charles" class="main-photo">
-                        <img src="icon-192.png" alt="Ícone Soja" class="sub-icon shadow-sm">
+        <div class="card-material p-4 shadow-lg bg-white text-center rounded-5">
+            <div class="mb-3 position-relative d-inline-block">
+                <img src="minha-foto.jpg" alt="Foto" class="main-photo">
+                <img src="icon-192.png" alt="Ícone" class="sub-icon">
+            </div>
+            <h4 class="fw-bold mb-1">Charles Santana</h4>
+            <p class="text-muted small mb-4">Desenvolvedor & Auditor</p>
+            <div class="bg-light p-3 rounded-4 mb-4 text-start border-start border-4 border-primary">
+                <p class="mb-0" style="font-size: 0.85rem;">Sistema Multi-Teste para auditoria de soja em tempo real.</p>
+            </div>
+            <div class="d-grid gap-3">
+                <a href="https://api.whatsapp.com/send?phone=5549992001308" target="_blank" class="btn btn-outline-primary rounded-pill py-3 fw-bold">💬 Sugestões</a>
+                <div class="bg-primary bg-opacity-10 p-3 rounded-4">
+                    <p class="small fw-bold mb-2 text-primary">APOIAR VIA PIX</p>
+                    <div class="input-group">
+                        <input type="text" id="pixKey" class="form-control border-0 bg-white" value="adde00cc-8748-4809-9e4f-27b95e587c5f" readonly>
+                        <button class="btn btn-primary px-3" onclick="copyPix(event)">Copiar</button>
                     </div>
-
-                    <h4 class="fw-bold mb-1">Charles Santana</h4>
-                    <p class="text-muted small mb-4">Desenvolvedor & Auditor</p>
-                    
-                    <div class="bg-light p-3 rounded-4 mb-4 text-start border-start border-4 border-primary">
-                        <h6 class="fw-bold small text-primary mb-1 text-uppercase">Sobre o App</h6>
-                        <p class="mb-0" style="font-size: 0.85rem; color: #444;">
-                            Especialista em auditoria de carga. Este app foi criado para garantir precisão e agilidade no campo.
-                        </p>
-                    </div>
-
-                    <div class="d-grid gap-3">
-                        <a href="https://api.whatsapp.com/send?phone=5549992001308&text=Sugestão para o App" target="_blank" class="btn btn-outline-primary rounded-pill py-3 fw-bold">💬 Enviar Sugestão</a>
-                        
-                        <div class="bg-primary bg-opacity-10 p-3 rounded-4 text-start">
-                            <p class="small fw-bold mb-2 text-primary text-center">APOIAR VIA PIX</p>
-                            <div class="input-group">
-                                <input type="text" id="pixKey" class="form-control border-0 bg-white" value="adde00cc-8748-4809-9e4f-27b95e587c5f" readonly>
-                                <button class="btn btn-primary px-3" onclick="copyPix(event)">Copiar</button>
-                            </div>
-                        </div>
-                    </div>
-                    <button class="btn btn-light-md w-100 mt-5 py-3" onclick="toggleScreen('main-screen')">Voltar</button>
                 </div>
             </div>
+            <button class="btn btn-light-md w-100 mt-5 py-3" onclick="toggleScreen('main-screen')">Voltar</button>
         </div>
     </div>
 
     <div class="modal fade" id="resultModal" data-bs-backdrop="static" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-5 border-0 shadow-lg">
-                <div class="modal-body p-4 text-center">
-                    <h5 class="fw-bold mb-4">Concluir Auditoria</h5>
+                <div class="modal-body p-4">
+                    <h5 class="fw-bold mb-3 text-center" id="modalTitle">Finalizar Teste</h5>
                     <div class="form-floating mb-2">
                         <input type="text" class="form-control bg-light" id="modalProducer" placeholder="Produtor(a)">
                         <label>Nome do(a) Produtor(a)</label>
@@ -110,19 +91,18 @@
                         <input type="text" class="form-control bg-light text-uppercase" id="modalPlate" placeholder="Placa">
                         <label>Placa</label>
                     </div>
-
-                    <p class="small fw-bold text-secondary mb-2 text-uppercase">Resultado:</p>
+                    <p class="small fw-bold text-secondary mb-2">RESULTADO:</p>
                     <div class="row g-2 mb-4">
                         <div class="col-6"><button class="btn btn-status w-100" onclick="setStatus('Testada Positiva', '#2E7D32')">Positiva</button></div>
                         <div class="col-6"><button class="btn btn-status w-100" onclick="setStatus('Testada Negativa', '#C62828')">Negativa</button></div>
                         <div class="col-6"><button class="btn btn-status w-100" onclick="setStatus('Declarada', '#1565C0')">Declarada</button></div>
                         <div class="col-6"><button class="btn btn-status w-100" onclick="setStatus('Participante', '#EF6C00')">Participante</button></div>
                     </div>
-
                     <div id="exportOptions" class="d-grid gap-2 d-none">
-                        <button class="btn btn-success rounded-pill py-3 fw-bold" onclick="exportWhatsApp('completo')">💬 Registro Completo</button>
-                        <button class="btn btn-outline-success rounded-pill py-2 fw-bold" onclick="exportWhatsApp('resumido')">📄 Registro Resumido</button>
-                        <button class="btn btn-link text-muted mt-2" onclick="softReset()">Fechar e Resetar Tempo</button>
+                        <button class="btn btn-success rounded-pill py-3 fw-bold" onclick="exportWhatsApp('completo')">💬 Enviar Completo</button>
+                        <button class="btn btn-outline-success rounded-pill py-2 fw-bold" onclick="exportWhatsApp('resumido')">📄 Enviar Resumido</button>
+                        <button class="btn btn-link text-muted mt-2" onclick="resetCurrentTest()">Limpar este Teste e Fechar</button>
+                        <button class="btn btn-link text-dark fw-bold" data-bs-dismiss="modal">Apenas fechar (Manter dados)</button>
                     </div>
                 </div>
             </div>
