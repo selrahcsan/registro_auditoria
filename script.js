@@ -1,6 +1,6 @@
 let timerInterval, startTime, elapsedTime = 0;
-const limitNormal = 5 * 60 * 1000; // 5 Minutos
-const maxOvertime = 20 * 60 * 1000; // 20 Minutos Extra
+const limitNormal = 5 * 60 * 1000;
+const maxOvertime = 20 * 60 * 1000;
 let endTimeRecord, dateRecord, currentStatusData = {};
 
 const modal = new bootstrap.Modal(document.getElementById('resultModal'));
@@ -15,6 +15,7 @@ function formatTime(ms) {
 function updateUI() {
     const timerDisplay = document.getElementById('timer');
     const progressCircle = document.getElementById('progress');
+    
     timerDisplay.innerHTML = formatTime(elapsedTime);
 
     if (elapsedTime <= limitNormal) {
@@ -23,14 +24,16 @@ function updateUI() {
         progressCircle.style.stroke = "#0061A4";
         timerDisplay.style.color = "#0061A4";
         document.getElementById('overtime-container').style.visibility = "hidden";
+        document.getElementById('status-label').innerText = "Tempo Decorrido";
     } else {
         let extra = elapsedTime - limitNormal;
         timerDisplay.innerHTML = "05:00:00";
         document.getElementById('overtime-timer').innerHTML = formatTime(extra);
         document.getElementById('overtime-container').style.visibility = "visible";
-        document.getElementById('status-label').innerText = "TEMPO EXTRA";
+        document.getElementById('status-label').innerText = "Tempo Extra";
         progressCircle.style.stroke = "#FBC02D"; 
         timerDisplay.style.color = "#FBC02D";
+        if (extra >= maxOvertime) { clearInterval(timerInterval); stopTimer(); }
     }
 }
 
@@ -54,48 +57,47 @@ function stopTimer() {
     modal.show();
 }
 
-function setStatus(status, bg, txt) {
+function setStatus(status, color) {
     const prod = document.getElementById('modalProducer').value;
     const plac = document.getElementById('modalPlate').value;
-    if(!prod || !plac) return alert("Preencha Produtor e Placa!");
-
-    currentStatusData = { status, bg, txt, prod, plac };
-    document.getElementById('btnImg').classList.remove('d-none');
-    document.getElementById('btnTxt').classList.remove('d-none');
+    if(!prod || !plac) return alert("Preencha Produtor e Placa primeiro!");
+    currentStatusData = { status, prod, plac };
+    document.getElementById('exportOptions').classList.remove('d-none');
+    document.querySelectorAll('.btn-status').forEach(b => b.style.border = "1px solid #ddd");
+    event.target.style.border = `2px solid ${color}`;
 }
 
-function exportWhatsApp() {
+function exportWhatsApp(tipo) {
     const auditor = document.getElementById('auditorName').value;
     const pdr = document.getElementById('pdrValue').value;
-    
-    // Cálculo do tempo total para o texto
-    let tempoTotal = elapsedTime > limitNormal ? 
-        `05:00:00 (+ Extra: ${formatTime(elapsedTime - limitNormal)})` : 
-        formatTime(elapsedTime);
-    
-    // MENSAGEM FORMATADA CONFORME SOLICITADO
-    const msg = `*REGISTRO DE AUDITORIA*%0A` +
-                `--------------------------%0A` +
-                `*Data:* ${dateRecord}%0A` +
-                `*Hora:* ${endTimeRecord}%0A%0A` + // Alterado para "Hora:"
-                `*Auditor:* ${auditor}%0A` +
-                `*PDR:* ${pdr}%0A` +
-                `*Produtor:* ${currentStatusData.prod}%0A` +
-                `*Placa:* ${currentStatusData.plac.toUpperCase()}%0A` +
-                `*Tempo Testagem:* ${tempoTotal}%0A` + // Alterado para "Tempo Testagem:"
-                `*Resultado:* ${currentStatusData.status}`;
+    const { status, prod, plac } = currentStatusData;
+    let tempoTotal = elapsedTime > limitNormal ? `05:00:00 (+ Extra: ${formatTime(elapsedTime - limitNormal)})` : formatTime(elapsedTime);
+
+    let msg = tipo === 'completo' ? 
+        `*REGISTRO DE AUDITORIA*%0A--------------------------%0A*Data:* ${dateRecord}%0A*Hora:* ${endTimeRecord}%0A%0A*Auditor:* ${auditor}%0A*PDR:* ${pdr}%0A*Produtor:* ${prod}%0A*Placa:* ${plac.toUpperCase()}%0A*Tempo Testagem:* ${tempoTotal}%0A*Resultado:* ${status}` :
+        `*Produtor:* ${prod}%0A*Placa:* ${plac.toUpperCase()}%0A*Resultado:* ${status}`;
 
     window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
 }
 
-// Funções de Imagem e Reset (mantidas iguais)
-function exportImage() {
-    // ... lógica de captura de imagem (idêntica ao anterior)
-    modal.hide();
-    // (Ajustar labels internos se necessário para bater com o texto)
-    setTimeout(() => location.reload(), 2000);
+function toggleScreen(scr) {
+    document.getElementById('main-screen').classList.toggle('d-none', scr === 'bio-screen');
+    document.getElementById('bio-screen').classList.toggle('d-none', scr === 'main-screen');
+    document.getElementById('btnSobre').classList.toggle('d-none', scr === 'bio-screen');
+}
+
+function copyPix(e) {
+    const key = document.getElementById('pixKey');
+    key.select();
+    navigator.clipboard.writeText(key.value);
+    e.target.innerText = "Copiado! ✅";
+    setTimeout(() => e.target.innerText = "Copiar", 2000);
 }
 
 document.getElementById('startBtn').addEventListener('click', startTimer);
 document.getElementById('stopBtn').addEventListener('click', stopTimer);
 document.getElementById('resetBtn').addEventListener('click', () => location.reload());
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); });
+}
