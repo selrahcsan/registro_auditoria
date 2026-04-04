@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auditoria Soja</title>
+    <title>Auditoria Pro - Online</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="d-flex align-items-center vh-100 bg-light">
@@ -16,7 +15,13 @@
             <div class="col-12 col-md-6 col-lg-5">
                 
                 <div id="capture-area" class="card-material p-4 shadow-lg bg-white rounded-5">
-                    <h5 class="text-center mb-4 fw-bold text-secondary text-uppercase">REGISTRO DE AUDITORIA</h5>
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h6 class="fw-bold text-secondary text-uppercase mb-0">Registro de Auditoria</h6>
+                        <div class="text-end" style="font-size: 0.75rem; color: #777;">
+                            <div id="disp-date"></div>
+                            <div id="disp-hour" class="fw-bold"></div>
+                        </div>
+                    </div>
 
                     <div class="mb-3">
                         <div class="form-floating mb-2">
@@ -28,40 +33,39 @@
                             <label>PDR</label>
                         </div>
                         
-                        <div id="data-display-area" class="d-none">
-                            <div class="p-2 mb-1 bg-light rounded-3"><strong>Produtor:</strong> <span id="disp-producer"></span></div>
-                            <div class="p-2 mb-2 bg-light rounded-3"><strong>Placa:</strong> <span id="disp-plate" class="text-uppercase"></span></div>
-                        </div>
-
-                        <div id="result-display" class="text-center py-2 rounded-3 d-none mb-3">
-                            <span class="fw-bold text-uppercase" id="finalStatusText"></span>
+                        <div id="data-display-area" class="d-none mt-3">
+                            <div class="p-2 mb-1 bg-light rounded-3" style="font-size: 0.9rem;"><strong>Produtor:</strong> <span id="disp-producer"></span></div>
+                            <div class="p-2 mb-2 bg-light rounded-3" style="font-size: 0.9rem;"><strong>Placa:</strong> <span id="disp-plate" class="text-uppercase"></span></div>
+                            <div id="result-display" class="text-center py-2 rounded-3 mb-2">
+                                <span class="fw-bold text-uppercase" id="finalStatusText" style="font-size: 0.85rem;"></span>
+                            </div>
                         </div>
                     </div>
 
-                    <div id="gauge-and-timer-ui" class="text-center">
+                    <div id="gauge-ui" class="text-center">
                         <div class="gauge-container mb-3">
                             <svg viewBox="0 0 200 120" class="gauge">
                                 <path class="gauge-bg" d="M20,100 A80,80 0 0,1 180,100" />
                                 <path id="progress" class="gauge-progress" d="M20,100 A80,80 0 0,1 180,100" />
                             </svg>
                         </div>
-                        <small id="status-label" class="text-muted d-block fw-bold text-uppercase">TEMPO DECORRIDO</small>
-                        <span id="timer" class="timer-display-normal">00:00:00</span>
+                        <small id="status-label" class="text-muted d-block fw-bold text-uppercase mb-1" style="font-size: 0.7rem;">Tempo Decorrido</small>
+                        <span id="timer">00:00:00</span>
                         <div id="overtime-container" class="mt-2" style="visibility: hidden;">
-                            <span class="badge-extra">EXTRA: <span id="overtime-timer">00:00:00</span></span>
+                            <span class="badge-extra-warning">TEMPO EXTRA: <span id="overtime-timer">00:00:00</span></span>
                         </div>
                     </div>
 
-                    <div id="capture-timer-display" class="d-none text-center mt-3 pt-3 border-top">
-                        <p class="text-muted fw-bold mb-1">TEMPO TOTAL</p>
+                    <div id="capture-timer-display" class="d-none text-center mt-2 pt-3 border-top">
+                        <p class="text-muted fw-bold mb-1" style="font-size: 0.7rem;">TEMPO TOTAL REGISTRADO</p>
                         <div id="final-time-text"></div>
                     </div>
                 </div>
 
                 <div class="d-flex justify-content-between gap-2 mt-4 px-2">
-                    <button id="startBtn" class="btn btn-primary-md flex-grow-1">Iniciar</button>
-                    <button id="stopBtn" class="btn btn-danger-md flex-grow-1" disabled>Parar</button>
-                    <button id="resetBtn" class="btn btn-light-md">Limpar Tudo</button>
+                    <button id="startBtn" class="btn btn-primary-md flex-grow-1 shadow-sm">Iniciar</button>
+                    <button id="stopBtn" class="btn btn-danger-md flex-grow-1 shadow-sm" disabled>Parar</button>
+                    <button id="resetBtn" class="btn btn-light-md shadow-sm">Limpar</button>
                 </div>
             </div>
         </div>
@@ -69,23 +73,31 @@
 
     <div class="modal fade" id="resultModal" data-bs-backdrop="static" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content rounded-5 border-0 shadow">
+            <div class="modal-content rounded-5 border-0 shadow-lg">
                 <div class="modal-body p-4">
-                    <h4 class="fw-bold mb-4 text-center">Dados da Carga</h4>
+                    <h5 class="fw-bold mb-3 text-center">Finalizar Registro</h5>
+                    
                     <div class="form-floating mb-2">
                         <input type="text" class="form-control bg-light" id="modalProducer" placeholder="Produtor">
                         <label>Nome do Produtor</label>
                     </div>
-                    <div class="form-floating mb-4">
+                    <div class="form-floating mb-3">
                         <input type="text" class="form-control bg-light text-uppercase" id="modalPlate" placeholder="Placa">
                         <label>Placa</label>
                     </div>
-                    <h6 class="fw-bold mb-3 text-secondary">Resultado:</h6>
+
+                    <p class="small fw-bold text-secondary mb-2">RESULTADO:</p>
+                    <div class="row g-2 mb-4">
+                        <div class="col-6"><button class="btn btn-status w-100" onclick="setStatus('Testada Positiva', '#E8F5E9', '#2E7D32')">Positiva</button></div>
+                        <div class="col-6"><button class="btn btn-status w-100" onclick="setStatus('Testada Negativa', '#FFEBEE', '#C62828')">Negativa</button></div>
+                        <div class="col-6"><button class="btn btn-status w-100" onclick="setStatus('Declarada', '#E3F2FD', '#1565C0')">Declarada</button></div>
+                        <div class="col-6"><button class="btn btn-status w-100" onclick="setStatus('Participante', '#FFF3E0', '#EF6C00')">Participante</button></div>
+                    </div>
+
                     <div class="d-grid gap-2">
-                        <button class="btn btn-status" onclick="finishWithStatus('Testada Positiva', '#e8f5e9', '#2e7d32')">Testada Positiva</button>
-                        <button class="btn btn-status" onclick="finishWithStatus('Testada Negativa', '#ffebee', '#c62828')">Testada Negativa</button>
-                        <button class="btn btn-status" onclick="finishWithStatus('Declarada', '#e3f2fd', '#1565c0')">Declarada</button>
-                        <button class="btn btn-status" onclick="finishWithStatus('Participante', '#fff3e0', '#ef6c00')">Participante</button>
+                        <button id="btnImg" class="btn btn-dark rounded-pill py-3 fw-bold d-none" onclick="exportImage()">📸 Salvar Imagem PNG</button>
+                        <button id="btnTxt" class="btn btn-success rounded-pill py-3 fw-bold d-none" onclick="exportWhatsApp()">💬 Enviar WhatsApp</button>
+                        <button class="btn btn-link text-muted mt-2" data-bs-dismiss="modal">Cancelar</button>
                     </div>
                 </div>
             </div>
@@ -93,6 +105,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
