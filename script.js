@@ -12,10 +12,16 @@ function formatTime(ms) {
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}:${cs.toString().padStart(2, "0")}`;
 }
 
+// Formatação HH:MM:00 para o WhatsApp (Soma tempo real)
+function formatRealTotalTime(ms) {
+    let m = Math.floor(ms / 60000);
+    let s = Math.floor((ms % 60000) / 1000);
+    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}:00`;
+}
+
 function updateUI() {
     const timerDisplay = document.getElementById('timer');
     const progressCircle = document.getElementById('progress');
-    
     timerDisplay.innerHTML = formatTime(elapsedTime);
 
     if (elapsedTime <= limitNormal) {
@@ -45,8 +51,6 @@ function startTimer() {
     }, 10);
     document.getElementById('startBtn').disabled = true;
     document.getElementById('stopBtn').disabled = false;
-    document.getElementById('auditorName').disabled = true;
-    document.getElementById('pdrValue').disabled = true;
 }
 
 function stopTimer() {
@@ -60,7 +64,7 @@ function stopTimer() {
 function setStatus(status, color) {
     const prod = document.getElementById('modalProducer').value;
     const plac = document.getElementById('modalPlate').value;
-    if(!prod || !plac) return alert("Preencha Produtor e Placa primeiro!");
+    if(!prod || !plac) return alert("Preencha Produtor(a) e Placa!");
     currentStatusData = { status, prod, plac };
     document.getElementById('exportOptions').classList.remove('d-none');
     document.querySelectorAll('.btn-status').forEach(b => b.style.border = "1px solid #ddd");
@@ -71,13 +75,26 @@ function exportWhatsApp(tipo) {
     const auditor = document.getElementById('auditorName').value;
     const pdr = document.getElementById('pdrValue').value;
     const { status, prod, plac } = currentStatusData;
-    let tempoTotal = elapsedTime > limitNormal ? `05:00:00 (+ Extra: ${formatTime(elapsedTime - limitNormal)})` : formatTime(elapsedTime);
+    
+    let tempoFinal = formatRealTotalTime(elapsedTime);
 
     let msg = tipo === 'completo' ? 
-        `*REGISTRO DE AUDITORIA*%0A--------------------------%0A*Data:* ${dateRecord}%0A*Hora:* ${endTimeRecord}%0A%0A*Auditor:* ${auditor}%0A*PDR:* ${pdr}%0A*Produtor:* ${prod}%0A*Placa:* ${plac.toUpperCase()}%0A*Tempo Testagem:* ${tempoTotal}%0A*Resultado:* ${status}` :
-        `*Produtor:* ${prod}%0A*Placa:* ${plac.toUpperCase()}%0A*Resultado:* ${status}`;
+        `*REGISTRO DE AUDITORIA*%0A--------------------------%0A*Data:* ${dateRecord}%0A*Hora:* ${endTimeRecord}%0A%0A*Auditor:* ${auditor}%0A*PDR:* ${pdr}%0A*Produtor(a):* ${prod}%0A*Placa:* ${plac.toUpperCase()}%0A*Tempo Testagem:* ${tempoFinal}%0A*Resultado:* ${status}` :
+        `*Produtor(a):* ${prod}%0A*Placa:* ${plac.toUpperCase()}%0A*Resultado:* ${status}`;
 
     window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+}
+
+function softReset() {
+    clearInterval(timerInterval);
+    elapsedTime = 0;
+    updateUI();
+    document.getElementById('modalProducer').value = "";
+    document.getElementById('modalPlate').value = "";
+    document.getElementById('exportOptions').classList.add('d-none');
+    document.getElementById('startBtn').disabled = false;
+    document.getElementById('stopBtn').disabled = true;
+    modal.hide();
 }
 
 function toggleScreen(scr) {
@@ -96,7 +113,6 @@ function copyPix(e) {
 
 document.getElementById('startBtn').addEventListener('click', startTimer);
 document.getElementById('stopBtn').addEventListener('click', stopTimer);
-document.getElementById('resetBtn').addEventListener('click', () => location.reload());
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); });
