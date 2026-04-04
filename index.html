@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auditoria Pro - Multi-Teste</title>
+    <title>Auditoria Pro - Multi</title>
     <link rel="icon" type="image/png" href="icon-192.png">
     <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -13,7 +13,7 @@
 <body class="bg-light">
 
     <div class="container pt-3">
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-3 px-2">
             <h5 class="fw-bold text-primary mb-0">Auditoria Pro <span class="badge bg-primary rounded-pill" style="font-size: 0.6rem;">MULTI</span></h5>
             <button id="btnSobre" class="btn btn-light rounded-pill shadow-sm" onclick="toggleScreen('bio-screen')">ℹ️ Sobre</button>
         </div>
@@ -55,15 +55,12 @@
 
     <div id="bio-screen" class="container d-none py-4">
         <div class="card-material p-4 shadow-lg bg-white text-center rounded-5">
-            <div class="mb-3 position-relative d-inline-block">
+            <div class="mb-4 position-relative d-inline-block">
                 <img src="minha-foto.jpg" alt="Foto" class="main-photo">
                 <img src="icon-192.png" alt="Ícone" class="sub-icon">
             </div>
             <h4 class="fw-bold mb-1">Charles Santana</h4>
             <p class="text-muted small mb-4">Desenvolvedor & Auditor</p>
-            <div class="bg-light p-3 rounded-4 mb-4 text-start border-start border-4 border-primary">
-                <p class="mb-0" style="font-size: 0.85rem;">Sistema Multi-Teste para auditoria de soja em tempo real.</p>
-            </div>
             <div class="d-grid gap-3">
                 <a href="https://api.whatsapp.com/send?phone=5549992001308" target="_blank" class="btn btn-outline-primary rounded-pill py-3 fw-bold">💬 Sugestões</a>
                 <div class="bg-primary bg-opacity-10 p-3 rounded-4">
@@ -81,16 +78,10 @@
     <div class="modal fade" id="resultModal" data-bs-backdrop="static" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-5 border-0 shadow-lg">
-                <div class="modal-body p-4">
-                    <h5 class="fw-bold mb-3 text-center" id="modalTitle">Finalizar Teste</h5>
-                    <div class="form-floating mb-2">
-                        <input type="text" class="form-control bg-light" id="modalProducer" placeholder="Produtor(a)">
-                        <label>Nome do(a) Produtor(a)</label>
-                    </div>
-                    <div class="form-floating mb-4">
-                        <input type="text" class="form-control bg-light text-uppercase" id="modalPlate" placeholder="Placa">
-                        <label>Placa</label>
-                    </div>
+                <div class="modal-body p-4 text-center">
+                    <h5 class="fw-bold mb-4" id="modalTitle">Finalizar Teste</h5>
+                    <div class="form-floating mb-2"><input type="text" class="form-control bg-light" id="modalProducer" placeholder="Produtor(a)"><label>Produtor(a)</label></div>
+                    <div class="form-floating mb-4"><input type="text" class="form-control bg-light text-uppercase" id="modalPlate" placeholder="Placa"><label>Placa</label></div>
                     <p class="small fw-bold text-secondary mb-2">RESULTADO:</p>
                     <div class="row g-2 mb-4">
                         <div class="col-6"><button class="btn btn-status w-100" onclick="setStatus('Testada Positiva', '#2E7D32')">Positiva</button></div>
@@ -99,10 +90,10 @@
                         <div class="col-6"><button class="btn btn-status w-100" onclick="setStatus('Participante', '#EF6C00')">Participante</button></div>
                     </div>
                     <div id="exportOptions" class="d-grid gap-2 d-none">
-                        <button class="btn btn-success rounded-pill py-3 fw-bold" onclick="exportWhatsApp('completo')">💬 Enviar Completo</button>
-                        <button class="btn btn-outline-success rounded-pill py-2 fw-bold" onclick="exportWhatsApp('resumido')">📄 Enviar Resumido</button>
-                        <button class="btn btn-link text-muted mt-2" onclick="resetCurrentTest()">Limpar este Teste e Fechar</button>
-                        <button class="btn btn-link text-dark fw-bold" data-bs-dismiss="modal">Apenas fechar (Manter dados)</button>
+                        <button class="btn btn-success rounded-pill py-3 fw-bold" onclick="exportWhatsApp('completo')">💬 Registro Completo</button>
+                        <button class="btn btn-outline-success rounded-pill py-2 fw-bold" onclick="exportWhatsApp('resumido')">📄 Registro Resumido</button>
+                        <button class="btn btn-link text-muted mt-2" onclick="resetCurrentTest()">Resetar este Teste</button>
+                        <button class="btn btn-link text-dark fw-bold" data-bs-dismiss="modal">Manter Dados</button>
                     </div>
                 </div>
             </div>

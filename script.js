@@ -1,8 +1,8 @@
 let tests = {
-    1: { elapsedTime: 0, startTime: null, interval: null, status: 'idle', data: {}, date: '', endTime: '' },
-    2: { elapsedTime: 0, startTime: null, interval: null, status: 'idle', data: {}, date: '', endTime: '' },
-    3: { elapsedTime: 0, startTime: null, interval: null, status: 'idle', data: {}, date: '', endTime: '' },
-    4: { elapsedTime: 0, startTime: null, interval: null, status: 'idle', data: {}, date: '', endTime: '' }
+    1: { id: 1, elapsedTime: 0, startTime: null, interval: null, status: 'idle', data: {}, date: '', endTime: '' },
+    2: { id: 2, elapsedTime: 0, startTime: null, interval: null, status: 'idle', data: {}, date: '', endTime: '' },
+    3: { id: 3, elapsedTime: 0, startTime: null, interval: null, status: 'idle', data: {}, date: '', endTime: '' },
+    4: { id: 4, elapsedTime: 0, startTime: null, interval: null, status: 'idle', data: {}, date: '', endTime: '' }
 };
 
 let currentActive = 1;
@@ -53,14 +53,20 @@ function updateChronometerDisplay(ms) {
 
 function startActiveTimer() {
     const t = tests[currentActive];
+    if (t.status === 'running') return;
+
     t.status = 'running';
     t.startTime = Date.now() - t.elapsedTime;
     document.getElementById(`slot-${currentActive}`).classList.add('running');
     
+    clearInterval(t.interval);
     t.interval = setInterval(() => {
         t.elapsedTime = Date.now() - t.startTime;
-        if (currentActive === currentActive) updateChronometerDisplay(t.elapsedTime);
-    }, 10);
+        // ISOLAMENTO DE UI: Só desenha se o teste for o que está em foco
+        if (tests[currentActive].id === t.id) {
+            updateChronometerDisplay(t.elapsedTime);
+        }
+    }, 50);
     refreshUI();
 }
 
@@ -70,12 +76,14 @@ function stopActiveTimer() {
     t.status = 'completed';
     const agora = new Date();
     t.date = agora.toLocaleDateString('pt-BR');
-    t.endTime = agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+    t.endTime = agora.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
 
     document.getElementById(`slot-${currentActive}`).classList.remove('running');
     document.getElementById(`slot-${currentActive}`).classList.add('completed');
     
     document.getElementById('modalTitle').innerText = `Finalizar Teste ${currentActive}`;
+    document.getElementById('modalProducer').value = t.data.prod || "";
+    document.getElementById('modalPlate').value = t.data.plac || "";
     modal.show();
     refreshUI();
 }
@@ -94,11 +102,15 @@ function exportWhatsApp(tipo) {
     const pdr = document.getElementById('pdrValue').value;
     const d = t.data;
     
-    let tempoTotal = `${Math.floor(t.elapsedTime / 60000).toString().padStart(2, "0")}:${Math.floor((t.elapsedTime % 60000) / 1000).toString().padStart(2, "0")}:00`;
+    // Tempo total real somado
+    let totalMs = t.elapsedTime;
+    let m = Math.floor(totalMs / 60000);
+    let s = Math.floor((totalMs % 60000) / 1000);
+    let tempoFinal = `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}:00`;
 
     let msg = tipo === 'completo' ? 
-        `*AUDITORIA - TESTE ${currentActive}*%0A--------------------------%0A*Data:* ${t.date}%0A*Hora:* ${t.endTime}%0A%0A*Auditor:* ${auditor}%0A*PDR:* ${pdr}%0A*Produtor(a):* ${d.prod}%0A*Placa:* ${d.plac.toUpperCase()}%0A*Tempo Testagem:* ${tempoTotal}%0A*Resultado:* ${d.status}` :
-        `*Teste ${currentActive} - ${d.prod}* (${d.plac.toUpperCase()}): ${d.status}`;
+        `*AUDITORIA - TESTE ${currentActive}*%0A--------------------------%0A*Data:* ${t.date}%0A*Hora:* ${t.endTime}%0A%0A*Auditor:* ${auditor}%0A*PDR:* ${pdr}%0A*Produtor(a):* ${d.prod}%0A*Placa:* ${d.plac.toUpperCase()}%0A*Tempo Testagem:* ${tempoFinal}%0A*Resultado:* ${d.status}` :
+        `*Produtor(a):* ${d.prod}%0A*Placa:* ${d.plac.toUpperCase()}%0A*Resultado:* ${d.status}`;
 
     window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
 }
@@ -106,10 +118,8 @@ function exportWhatsApp(tipo) {
 function resetCurrentTest() {
     const t = tests[currentActive];
     clearInterval(t.interval);
-    tests[currentActive] = { elapsedTime: 0, startTime: null, interval: null, status: 'idle', data: {}, date: '', endTime: '' };
+    tests[currentActive] = { id: currentActive, elapsedTime: 0, startTime: null, interval: null, status: 'idle', data: {}, date: '', endTime: '' };
     document.getElementById(`slot-${currentActive}`).classList.remove('completed', 'running');
-    document.getElementById('modalProducer').value = "";
-    document.getElementById('modalPlate').value = "";
     document.getElementById('exportOptions').classList.add('d-none');
     modal.hide();
     refreshUI();
@@ -127,4 +137,8 @@ function copyPix(e) {
     navigator.clipboard.writeText(key.value);
     e.target.innerText = "Copiado! ✅";
     setTimeout(() => e.target.innerText = "Copiar", 2000);
+}
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); });
 }
